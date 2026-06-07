@@ -17,7 +17,12 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 from api.app import app
-from api.dependencies import session_store
+from api.dependencies import (
+    get_file_registry,
+    get_session_store,
+    get_worker_pool,
+    session_store,
+)
 
 client: TestClient = TestClient(app)
 
@@ -25,6 +30,13 @@ client: TestClient = TestClient(app)
 _mock_vis: np.ndarray = np.zeros((10, 10, 3), dtype=np.uint8)
 _mock_preview: np.ndarray = np.zeros((10, 10, 3), dtype=np.uint8)
 _mock_return = (_mock_vis, _mock_preview, "/tmp/test.npy", "OK")
+
+
+def setup_module(module) -> None:
+    """Clear cross-module FastAPI dependency overrides before extractor tests."""
+    app.dependency_overrides.pop(get_session_store, None)
+    app.dependency_overrides.pop(get_file_registry, None)
+    app.dependency_overrides.pop(get_worker_pool, None)
 
 
 def _make_test_image_buf() -> io.BytesIO:
