@@ -1,0 +1,20 @@
+name: Sync Fork
+
+on:
+  schedule:
+    - cron: "*/30 * * * *" # 每 30 分钟检查并同步一次
+  workflow_dispatch: # 允许在 Actions 页面手动点击触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 必须具有写权限才能推送合并后的代码
+
+    steps:
+      - name: Sync upstream
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api -X POST repos/${{ github.repository }}/merge-upstream \
+            -f branch=${{ github.ref_name }}
